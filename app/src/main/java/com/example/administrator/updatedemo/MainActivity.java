@@ -25,8 +25,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void initSurfaceVideoView(){
         SurfaceVideoView surfaceVideoView=findViewById(R.id.surface_video_view);
-//        SurfaceVideoController surfaceVideoController=new SurfaceVideoController(this);
-//        surfaceVideoView.setVideoController(surfaceVideoController);
+        SurfaceVideoController surfaceVideoController=new SurfaceVideoController(this);
+        surfaceVideoView.setVideoController(surfaceVideoController);
         surfaceVideoView.openUri("http://vod.cntv.lxdns.com/flash/mp4video61/TMS/2017/08/17/63bf8bcc706a46b58ee5c821edaee661_h264818000nero_aac32-5.mp4");
     }
 

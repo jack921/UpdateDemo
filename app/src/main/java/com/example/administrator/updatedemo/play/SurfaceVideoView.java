@@ -5,21 +5,16 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
-
-import com.example.administrator.updatedemo.R;
-
 import java.io.IOException;
-
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 /**
@@ -83,18 +78,12 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
         try{
             ijkMediaPlayer=new IjkMediaPlayer();
             ijkMediaPlayer.setLogEnabled(true);
-            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC,"skip_loop_filter",48);
-            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);
-            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "start-on-prepared", 0);
-            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 1);
-            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "opensles", 1);
-            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1);
-            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", 1);
-            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-handle-resolution-change", 1);
-            if(surface==null){
-                surface=new Surface(mSurfaceTexture);
-            }
-            ijkMediaPlayer.setSurface(surface);
+            ijkMediaPlayer.setOption(1, "analyzemaxduration", 100L);
+            ijkMediaPlayer.setOption(1, "probesize", 10240L);
+            ijkMediaPlayer.setOption(1, "flush_packets", 1L);
+            ijkMediaPlayer.setOption(4, "packet-buffering", 0L);
+            ijkMediaPlayer.setOption(4, "framedrop", 1L);
+
             ijkMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             ijkMediaPlayer.setScreenOnWhilePlaying(true);
         }catch(Exception e){
@@ -131,11 +120,11 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
                 surface=new Surface(mSurfaceTexture);
             }
             ijkMediaPlayer.setSurface(surface);
-            ijkMediaPlayer.setDataSource(uri.toString());
+            ijkMediaPlayer.setDataSource(context, Uri.parse(uri));
             ijkMediaPlayer.prepareAsync();
             ijkMediaPlayer.start();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("openMediaPlayer",e.getMessage());
         }
     }
 
@@ -155,7 +144,6 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
 
     public void seekTo(long msec){
         ijkMediaPlayer.seekTo(msec);
-
     }
 
     @Override
