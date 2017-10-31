@@ -5,15 +5,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
-
 import com.example.administrator.updatedemo.play.SurfaceVideoController;
 import com.example.administrator.updatedemo.play.SurfaceVideoView;
 import com.example.administrator.updatedemo.weight.media.AndroidMediaController;
 import com.example.administrator.updatedemo.weight.media.IjkVideoView;
-
 import java.io.IOException;
-
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
@@ -29,7 +25,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void initSurfaceVideoView(){
         SurfaceVideoView surfaceVideoView=findViewById(R.id.surface_video_view);
-        surfaceVideoView.setVideoController(new SurfaceVideoController(this));
+//        SurfaceVideoController surfaceVideoController=new SurfaceVideoController(this);
+//        surfaceVideoView.setVideoController(surfaceVideoController);
         surfaceVideoView.openUri("http://vod.cntv.lxdns.com/flash/mp4video61/TMS/2017/08/17/63bf8bcc706a46b58ee5c821edaee661_h264818000nero_aac32-5.mp4");
     }
 

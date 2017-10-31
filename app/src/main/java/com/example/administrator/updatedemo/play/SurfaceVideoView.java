@@ -2,12 +2,23 @@ package com.example.administrator.updatedemo.play;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import com.example.administrator.updatedemo.R;
+
+import java.io.IOException;
 
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
@@ -15,14 +26,18 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
  * Created by Administrator on 2017/10/28.
  */
 
-public class SurfaceVideoView extends SurfaceView  {
+public class SurfaceVideoView extends FrameLayout implements TextureView.SurfaceTextureListener {
     private SurfaceVideoController surfaceVideoController;
     private IjkMediaPlayer ijkMediaPlayer;
-    private SurfaceHolder mSurfaceHolder;
-    private int videoViewWidth=0;
-    private int videoHeight=0;
+    private TextureView textureView;
+    private FrameLayout mContainer;
+    private SurfaceTexture mSurfaceTexture;
+    private Surface surface;
     private Context context;
     private String uri;
+
+    private int videoViewWidth=0;
+    private int videoHeight=0;
 
     public SurfaceVideoView(Context context) {
         super(context);
@@ -46,43 +61,81 @@ public class SurfaceVideoView extends SurfaceView  {
 
     public void initSurfaceVideoView(Context context){
         this.context=context;
-        this.mSurfaceHolder=getHolder();
-        surfaceVideoController=new SurfaceVideoController(context);
-        mSurfaceHolder.addCallback(surfaceHolderCallBack);
-        setFocusable(true);
-        setFocusableInTouchMode(true);
-        requestFocus();
+        initView();
+        initAudioManager();
+        initMediaPlayer();
+    }
+
+    public void initView(){
+        mContainer=new FrameLayout(context);
+        mContainer.setBackgroundColor(Color.BLACK);
+        LayoutParams params=new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+        addView(mContainer,params);
+    }
+
+    public void initAudioManager(){
         if (context instanceof Activity) {
             ((Activity) context).setVolumeControlStream(AudioManager.STREAM_MUSIC);
         }
     }
 
-    public void openUri(String uri){
-        this.uri=uri;
-        openVideo();
-        requestLayout();
-        invalidate();
-    }
-
-    public void openVideo(){
-        if(uri==null){
-            Toast.makeText(context,"uri不能为空",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        clearStatus();
+    public void initMediaPlayer(){
         try{
             ijkMediaPlayer=new IjkMediaPlayer();
             ijkMediaPlayer.setLogEnabled(true);
             ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC,"skip_loop_filter",48);
-
-            ijkMediaPlayer.setDataSource(uri.toString());
-
-            ijkMediaPlayer.setDisplay(mSurfaceHolder);
+            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);
+            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "start-on-prepared", 0);
+            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 1);
+            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "opensles", 1);
+            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1);
+            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", 1);
+            ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-handle-resolution-change", 1);
+            if(surface==null){
+                surface=new Surface(mSurfaceTexture);
+            }
+            ijkMediaPlayer.setSurface(surface);
+            ijkMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             ijkMediaPlayer.setScreenOnWhilePlaying(true);
-            ijkMediaPlayer.prepareAsync();
-            ijkMediaPlayer.start();
         }catch(Exception e){
             Log.e("Exception",e.getMessage());
+        }
+    }
+
+    public void openUri(String uri){
+        if(uri==null){
+            Toast.makeText(context,"uri不能为空",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        this.uri=uri;
+        initTexttureView();
+        addTextureView();
+    }
+
+    public void initTexttureView(){
+        if(textureView==null){
+            textureView=new TextureView(context);
+            textureView.setSurfaceTextureListener(this);
+        }
+    }
+
+    public void addTextureView(){
+        mContainer.removeView(textureView);
+        LayoutParams params=new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER);
+        mContainer.addView(textureView,0,params);
+    }
+
+    public void openMediaPlayer(){
+        try {
+            if(surface==null){
+                surface=new Surface(mSurfaceTexture);
+            }
+            ijkMediaPlayer.setSurface(surface);
+            ijkMediaPlayer.setDataSource(uri.toString());
+            ijkMediaPlayer.prepareAsync();
+            ijkMediaPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -94,31 +147,6 @@ public class SurfaceVideoView extends SurfaceView  {
         }
     }
 
-    SurfaceHolder.Callback surfaceHolderCallBack=new SurfaceHolder.Callback() {
-        @Override
-        public void surfaceCreated(SurfaceHolder holder) {
-            mSurfaceHolder=holder;
-            if(ijkMediaPlayer!=null){
-                ijkMediaPlayer.setDisplay(mSurfaceHolder);
-            }
-
-        }
-
-        @Override
-        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            mSurfaceHolder=holder;
-            videoViewWidth=width;
-            videoHeight=height;
-
-        }
-
-        @Override
-        public void surfaceDestroyed(SurfaceHolder holder) {
-            mSurfaceHolder=null;
-            clearStatus();
-        }
-    };
-
     public void setVideoController(SurfaceVideoController surfaceVideoController){
         this.surfaceVideoController=surfaceVideoController;
         surfaceVideoController.setAncherView(this);
@@ -129,5 +157,27 @@ public class SurfaceVideoView extends SurfaceView  {
         ijkMediaPlayer.seekTo(msec);
 
     }
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        if (mSurfaceTexture == null) {
+            mSurfaceTexture = surface;
+            openMediaPlayer();
+        } else {
+            textureView.setSurfaceTexture(mSurfaceTexture);
+        }
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {}
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        return mSurfaceTexture==null;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
+
 
 }
