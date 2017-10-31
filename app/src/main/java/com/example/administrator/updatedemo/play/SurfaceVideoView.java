@@ -139,7 +139,9 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
     public void setVideoController(SurfaceVideoController surfaceVideoController){
         this.surfaceVideoController=surfaceVideoController;
         surfaceVideoController.setAncherView(this);
-        surfaceVideoController.show();
+
+        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        addView(surfaceVideoController,params);
     }
 
     public void seekTo(long msec){
