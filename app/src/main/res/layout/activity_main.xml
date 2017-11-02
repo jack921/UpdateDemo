@@ -11,22 +11,6 @@
         android:layout_height="match_parent"
         android:background="#0099cc">
 
-        <!--<com.example.administrator.updatedemo.weight.media.IjkVideoView-->
-            <!--android:id="@+id/video_view"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:layout_gravity="center">-->
-        <!--</com.example.administrator.updatedemo.weight.media.IjkVideoView>-->
-
-        <!--<SurfaceView-->
-            <!--android:id="@+id/video_view"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent" />-->
-
-        <!--<com.example.administrator.updatedemo.SurfaceVideoView-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent" />-->
-
         <com.example.administrator.updatedemo.play.SurfaceVideoView
             android:id="@+id/surface_video_view"
             android:layout_width="match_parent"

@@ -14,8 +14,11 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.example.administrator.updatedemo.R;
+import com.example.administrator.updatedemo.play.Util.AbstractVideoViewController;
+import com.example.administrator.updatedemo.play.Util.VideoViewUtil;
 
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
@@ -23,11 +26,8 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
  * Created by Administrator on 2017/10/30.
  */
 
-public class SurfaceVideoController extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
-    private IjkMediaPlayer ijkMediaPlayer;
-    private AudioManager mAudioManager;
-    private View mAnchor,mRoot;
-    private int mAnimStyle;
+public class SurfaceVideoController extends AbstractVideoViewController implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+    private View mRoot;
     private Context context;
 
     private TextView title;
@@ -35,32 +35,16 @@ public class SurfaceVideoController extends FrameLayout implements View.OnClickL
     private SeekBar seekBar;
     private ImageView open;
     private ImageView screen;
-
+    private TextView mTimeAll;
+    private TextView mTimeImg;
 
     public SurfaceVideoController(@NonNull Context context) {
         super(context);
         initController(context);
     }
 
-    public SurfaceVideoController(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        initController(context);
-    }
-
-    public SurfaceVideoController(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        initController(context);
-    }
-
-    public SurfaceVideoController(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        initController(context);
-    }
-
     public void initController(final Context context){
         this.context=context;
-        mAudioManager=(AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-        mAnimStyle=android.R.style.Animation;
 
         mRoot=LayoutInflater.from(context).inflate(R.layout.layout_controller,this,false);
         addView(mRoot);
@@ -70,6 +54,8 @@ public class SurfaceVideoController extends FrameLayout implements View.OnClickL
         open=(ImageView)findViewById(R.id.play_btn);
         seekBar=(SeekBar)findViewById(R.id.av_seek_bar);
         screen=(ImageView)findViewById(R.id.screen_btn);
+        mTimeAll=(TextView)findViewById(R.id.time_all);
+        mTimeImg=(TextView)findViewById(R.id.time_img);
 
         back.setOnClickListener(this);
         open.setOnClickListener(this);
@@ -94,9 +80,8 @@ public class SurfaceVideoController extends FrameLayout implements View.OnClickL
      * 设置控制器
      * @param view
      */
-    public void setAncherView(View view){
-        this.mAnchor=view;
-
+    public void setVideoView(IjkMediaPlayer view){
+        this.ijkMediaPlayer=view;
 
     }
 
@@ -113,6 +98,23 @@ public class SurfaceVideoController extends FrameLayout implements View.OnClickL
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
 
+    }
+
+    @Override
+    public void updateTimeSeek() {
+        long position=ijkMediaPlayer.getCurrentPosition();
+        long duration=ijkMediaPlayer.getDuration();
+        long bufferPercentage=getCurrentPosition();
+        seekBar.setSecondaryProgress((int)bufferPercentage);
+        int progress=(int) (100f*position/duration);
+        seekBar.setProgress(progress);
+
+        mTimeImg.setText(VideoViewUtil.formatTime(position));
+        mTimeAll.setText(VideoViewUtil.formatTime(duration));
+    }
+
+    public long getCurrentPosition() {
+        return ijkMediaPlayer != null ? ijkMediaPlayer.getCurrentPosition() : 0;
     }
 
 

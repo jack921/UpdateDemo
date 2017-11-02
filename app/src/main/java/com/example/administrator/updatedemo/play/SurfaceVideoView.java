@@ -14,14 +14,22 @@ import android.view.TextureView;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import com.example.administrator.updatedemo.play.Util.VideoViewUtil;
+
 import java.io.IOException;
+
+import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 /**
  * Created by Administrator on 2017/10/28.
  */
+public class SurfaceVideoView extends FrameLayout implements TextureView.SurfaceTextureListener,
+        IMediaPlayer.OnPreparedListener, IMediaPlayer.OnVideoSizeChangedListener,
+        IMediaPlayer.OnCompletionListener, IMediaPlayer.OnErrorListener,
+        IMediaPlayer.OnInfoListener, IMediaPlayer.OnBufferingUpdateListener {
 
-public class SurfaceVideoView extends FrameLayout implements TextureView.SurfaceTextureListener {
     private SurfaceVideoController surfaceVideoController;
     private IjkMediaPlayer ijkMediaPlayer;
     private TextureView textureView;
@@ -84,10 +92,17 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
             ijkMediaPlayer.setOption(4, "packet-buffering", 0L);
             ijkMediaPlayer.setOption(4, "framedrop", 1L);
 
+            //设置监听
+            ijkMediaPlayer.setOnPreparedListener(this);
+            ijkMediaPlayer.setOnVideoSizeChangedListener(this);
+            ijkMediaPlayer.setOnCompletionListener(this);
+            ijkMediaPlayer.setOnErrorListener(this);
+            ijkMediaPlayer.setOnInfoListener(this);
+            ijkMediaPlayer.setOnBufferingUpdateListener(this);
+
             ijkMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             ijkMediaPlayer.setScreenOnWhilePlaying(true);
         }catch(Exception e){
-            Log.e("Exception",e.getMessage());
         }
     }
 
@@ -138,8 +153,7 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
 
     public void setVideoController(SurfaceVideoController surfaceVideoController){
         this.surfaceVideoController=surfaceVideoController;
-        surfaceVideoController.setAncherView(this);
-
+        surfaceVideoController.setVideoView(ijkMediaPlayer);
         LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         addView(surfaceVideoController,params);
     }
@@ -158,6 +172,29 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
         }
     }
 
+    public long getDuration(){
+        return ijkMediaPlayer!=null?ijkMediaPlayer.getDuration():0;
+    }
+
+    public long getCurrentPosition(){
+        return ijkMediaPlayer!=null?ijkMediaPlayer.getCurrentPosition():0;
+    }
+
+    public float getSpeed(float speed){
+        if(ijkMediaPlayer instanceof IjkMediaPlayer){
+            return ijkMediaPlayer.getSpeed(speed);
+        }
+        return 0;
+    }
+
+    public long getTcpSpeed(){
+        if(ijkMediaPlayer instanceof IjkMediaPlayer){
+            return ijkMediaPlayer.getTcpSpeed();
+        }
+        return 0;
+    }
+
+
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {}
 
@@ -168,6 +205,55 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
+
+
+    //设置监听
+    @Override
+    public void onPrepared(IMediaPlayer iMediaPlayer) {
+
+    }
+
+    @Override
+    public void onVideoSizeChanged(IMediaPlayer iMediaPlayer, int i, int i1, int i2, int i3) {
+
+    }
+
+    @Override
+    public void onCompletion(IMediaPlayer iMediaPlayer) {
+
+    }
+
+    @Override
+    public boolean onError(IMediaPlayer iMediaPlayer, int i, int i1) {
+        return false;
+    }
+
+    @Override
+    public boolean onInfo(IMediaPlayer mp, int what, int extra) {
+        switch(what){
+            case IjkMediaPlayer.MEDIA_INFO_VIDEO_DECODED_START:
+                VideoViewUtil.showToast(context,"MEDIA_INFO_VIDEO_DECODED_START");
+                break;
+            case IjkMediaPlayer.MEDIA_INFO_BUFFERING_START:
+                VideoViewUtil.showToast(context,"MEDIA_INFO_BUFFERING_START");
+                break;
+            case IMediaPlayer.MEDIA_INFO_BUFFERING_END:
+                VideoViewUtil.showToast(context,"MEDIA_INFO_BUFFERING_END");
+                break;
+            case IMediaPlayer.MEDIA_INFO_VIDEO_ROTATION_CHANGED:
+                VideoViewUtil.showToast(context,"MEDIA_INFO_VIDEO_ROTATION_CHANGED");
+                break;
+            case IMediaPlayer.MEDIA_INFO_NOT_SEEKABLE:
+                VideoViewUtil.showToast(context,"MEDIA_INFO_NOT_SEEKABLE");
+                break;
+        }
+        return false;
+    }
+
+    @Override
+    public void onBufferingUpdate(IMediaPlayer iMediaPlayer, int i) {
+
+    }
 
 
 }

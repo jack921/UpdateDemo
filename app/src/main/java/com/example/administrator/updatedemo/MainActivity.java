@@ -1,17 +1,9 @@
 package com.example.administrator.updatedemo;
 
-import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import com.example.administrator.updatedemo.play.SurfaceVideoController;
 import com.example.administrator.updatedemo.play.SurfaceVideoView;
-import com.example.administrator.updatedemo.weight.media.AndroidMediaController;
-import com.example.administrator.updatedemo.weight.media.IjkVideoView;
-import java.io.IOException;
-import tv.danmaku.ijk.media.player.IMediaPlayer;
-import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,7 +11,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         initSurfaceVideoView();
     }
 
