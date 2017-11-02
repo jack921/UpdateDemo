@@ -29,6 +29,50 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
         IMediaPlayer.OnPreparedListener, IMediaPlayer.OnVideoSizeChangedListener,
         IMediaPlayer.OnCompletionListener, IMediaPlayer.OnErrorListener,
         IMediaPlayer.OnInfoListener, IMediaPlayer.OnBufferingUpdateListener {
+    /**
+     * 播放错误
+     **/
+    public static final int STATE_ERROR = -1;
+    /**
+     * 播放未开始
+     **/
+    public static final int STATE_IDLE = 0;
+    /**
+     * 播放准备中
+     **/
+    public static final int STATE_PREPARING = 1;
+    /**
+     * 播放准备就绪
+     **/
+    public static final int STATE_PREPARED = 2;
+    /**
+     * 正在播放
+     **/
+    public static final int STATE_PLAYING = 3;
+    /**
+     * 暂停播放
+     **/
+    public static final int STATE_PAUSED = 4;
+    /**
+     * 正在缓冲(播放器正在播放时，缓冲区数据不足，进行缓冲，缓冲区数据足够后恢复播放)
+     **/
+    public static final int STATE_BUFFERING_PLAYING = 5;
+    /**
+     * 正在缓冲(播放器正在播放时，缓冲区数据不足，进行缓冲，此时暂停播放器，继续缓冲，缓冲区数据足够后恢复暂停
+     **/
+    public static final int STATE_BUFFERING_PAUSED = 6;
+    /**
+     * 播放完成
+     **/
+    public static final int STATE_COMPLETED = 7;
+    /**
+     * 普通模式
+     **/
+    public static final int MODE_NORMAL = 10;
+    /**
+     * 全屏模式
+     **/
+    public static final int MODE_FULL_SCREEN = 11;
 
     private SurfaceVideoController surfaceVideoController;
     private IjkMediaPlayer ijkMediaPlayer;
@@ -39,6 +83,7 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
     private Context context;
     private String uri;
 
+    private int mCurrentState = STATE_IDLE;
     private int videoViewWidth=0;
     private int videoHeight=0;
 
@@ -231,20 +276,38 @@ public class SurfaceVideoView extends FrameLayout implements TextureView.Surface
     @Override
     public boolean onInfo(IMediaPlayer mp, int what, int extra) {
         switch(what){
-            case IjkMediaPlayer.MEDIA_INFO_VIDEO_DECODED_START:
-                VideoViewUtil.showToast(context,"MEDIA_INFO_VIDEO_DECODED_START");
+            case IjkMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START:
+                // 播放器开始渲染
+                surfaceVideoController.udpateControllState(STATE_PLAYING);
                 break;
             case IjkMediaPlayer.MEDIA_INFO_BUFFERING_START:
-                VideoViewUtil.showToast(context,"MEDIA_INFO_BUFFERING_START");
+                // MediaPlayer暂时不播放，以缓冲更多的数据
+                if(mCurrentState==STATE_PAUSED||mCurrentState==STATE_BUFFERING_PAUSED){
+                    mCurrentState=STATE_BUFFERING_PAUSED;
+                }else{
+                    mCurrentState=STATE_BUFFERING_PLAYING;
+                }
+                surfaceVideoController.udpateControllState(mCurrentState);
                 break;
             case IMediaPlayer.MEDIA_INFO_BUFFERING_END:
-                VideoViewUtil.showToast(context,"MEDIA_INFO_BUFFERING_END");
+                // 填充缓冲区后，MediaPlayer恢复播放/暂停
+                if(mCurrentState==STATE_BUFFERING_PLAYING){
+                    mCurrentState=STATE_PLAYING;
+                    surfaceVideoController.udpateControllState(mCurrentState);
+                }
+                if(mCurrentState==STATE_BUFFERING_PAUSED){
+                    mCurrentState=STATE_PAUSED;
+                    surfaceVideoController.udpateControllState(mCurrentState);
+                }
                 break;
             case IMediaPlayer.MEDIA_INFO_VIDEO_ROTATION_CHANGED:
-                VideoViewUtil.showToast(context,"MEDIA_INFO_VIDEO_ROTATION_CHANGED");
+                // 视频旋转了extra度，需要恢复
+                if(textureView!=null){
+                    textureView.setRotation(extra);
+                }
                 break;
             case IMediaPlayer.MEDIA_INFO_NOT_SEEKABLE:
-                VideoViewUtil.showToast(context,"MEDIA_INFO_NOT_SEEKABLE");
+                //视频不能seekTo，为直播视频
                 break;
         }
         return false;

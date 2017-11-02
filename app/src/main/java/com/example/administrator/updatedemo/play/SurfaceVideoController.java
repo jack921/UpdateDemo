@@ -45,7 +45,6 @@ public class SurfaceVideoController extends AbstractVideoViewController implemen
 
     public void initController(final Context context){
         this.context=context;
-
         mRoot=LayoutInflater.from(context).inflate(R.layout.layout_controller,this,false);
         addView(mRoot);
 
@@ -86,18 +85,45 @@ public class SurfaceVideoController extends AbstractVideoViewController implemen
     }
 
     @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-    }
-
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
     @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
+    public void onStartTrackingTouch(SeekBar seekBar) {}
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
+        long position = (long) (ijkMediaPlayer.getDuration() * seekBar.getProgress() / 100f);
+        ijkMediaPlayer.seekTo(position);
+        startUpdateTimeSeekBar();
+    }
 
+    public void udpateControllState(int state){
+        switch(state){
+            case SurfaceVideoView.STATE_IDLE:
+
+                break;
+            case SurfaceVideoView.STATE_PREPARING:
+
+                break;
+            case SurfaceVideoView.STATE_PREPARED:
+                startUpdateTimeSeekBar();
+                break;
+            case SurfaceVideoView.STATE_PLAYING:
+                break;
+            case SurfaceVideoView.STATE_PAUSED:
+
+                break;
+            case SurfaceVideoView.STATE_BUFFERING_PLAYING:
+
+                break;
+            case SurfaceVideoView.STATE_BUFFERING_PAUSED:
+
+                break;
+            case SurfaceVideoView.STATE_ERROR:
+
+                break;
+            case SurfaceVideoView.STATE_COMPLETED:
+
+                break;
+        }
     }
 
     @Override
